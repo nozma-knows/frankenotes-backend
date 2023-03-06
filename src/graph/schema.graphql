@@ -1,0 +1,42 @@
+type Login {
+  id: ID!
+  user: User!
+  email: String!
+}
+
+type User {
+  id: ID!
+  firstName: String
+  lastName: String
+  email: String
+  emailVerified: Boolean
+}
+
+type Session {
+  id: ID!
+  token: String!
+}
+
+input CreateLoginInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  passwordConfirmation: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Query {
+  users: [User]
+  session(id: String!): Session
+}
+
+type Mutation {
+  createLogin(input: CreateLoginInput!): Login!
+  login(input: LoginInput!): Session!
+  logout: Session!
+}

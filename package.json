@@ -7,9 +7,6 @@
     "dev": "nodemon",
     "build": "rimraf ./build && tsc",
     "start": "yarn build && node build/index.js",
-    "migrate": "npx prisma migrate dev",
-    "compile": "graphql-codegen",
-    "watch": "graphql-codegen -w"
   },
   "author": "Noah Milberger <noah@milbo.co>",
   "license": "ISC",

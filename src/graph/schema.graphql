@@ -17,6 +17,16 @@ type Session {
   token: String!
 }
 
+type Note {
+  id: ID!
+  createdAt: String!
+  updatedAt: String!
+  authorId: String!
+  author: User!
+  title: String
+  content: [String]
+}
+
 input CreateLoginInput {
   firstName: String!
   lastName: String!
@@ -30,13 +40,24 @@ input LoginInput {
   password: String!
 }
 
+input NoteInput {
+  authorId: ID!
+  title: String!
+  content: [String]!
+}
+
 type Query {
   users: [User]
   session(id: String!): Session
+  note(id: String!): Note
+  notes: [Note]
 }
 
 type Mutation {
   createLogin(input: CreateLoginInput!): Login!
   login(input: LoginInput!): Session!
   logout: Session!
+  createNote(input: NoteInput!): Note!
+  updateNote(id: String!, input: NoteInput!): Note!
+  deleteNote(id: String!): Note!
 }

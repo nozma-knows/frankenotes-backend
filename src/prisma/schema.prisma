@@ -19,6 +19,7 @@ model User {
   email         String   @unique
   emailVerified Boolean
   login         Login?
+  notes         Note[]
 }
 
 model Login {
@@ -35,4 +36,14 @@ model Session {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   token     String   @unique
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  title     String
+  content   String[]
 }

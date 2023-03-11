@@ -27,9 +27,18 @@ export const noteQueryResolvers: NoteResolvers = {
 
     return note;
   },
-  notes: () => {
+  notes: (parents: any, args: { authorId: string }) => {
     const prisma = new PrismaClient();
-    return prisma.note.findMany();
+
+    const { authorId } = args;
+
+    if (!authorId) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    return prisma.note.findMany({
+      where: { authorId },
+    });
   },
 };
 

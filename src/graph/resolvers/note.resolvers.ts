@@ -2,11 +2,13 @@ import {
   NoteResolvers,
   NoteInput,
 } from "./../../__generated__/resolvers-types";
-const { prisma } = require("../../prisma/client");
+import { PrismaClient } from "@prisma/client";
+
 const crypto = require("crypto");
 
 export const noteQueryResolvers: NoteResolvers = {
-  note: (parents: any, args: { id: String }) => {
+  note: (parents: any, args: { id: string }) => {
+    const prisma = new PrismaClient();
     const { id } = args;
 
     if (!id) {
@@ -26,6 +28,7 @@ export const noteQueryResolvers: NoteResolvers = {
     return note;
   },
   notes: () => {
+    const prisma = new PrismaClient();
     return prisma.note.findMany();
   },
 };
@@ -33,9 +36,9 @@ export const noteQueryResolvers: NoteResolvers = {
 export const noteMutationResolvers: NoteResolvers = {
   // Create Note Mutation Resolver
   createNote: async (_parent: any, args: { input: NoteInput }) => {
+    const prisma = new PrismaClient();
     // Grab args
     const { authorId, title, content } = args.input;
-    console.log("args.input: ", { authorId, title, content });
 
     // Grab args error handling
     if (!authorId || !title || !content) {
@@ -48,7 +51,7 @@ export const noteMutationResolvers: NoteResolvers = {
         id: crypto.randomUUID(),
         authorId,
         title,
-        content,
+        // content,
       },
     });
 
@@ -59,7 +62,8 @@ export const noteMutationResolvers: NoteResolvers = {
 
     return note;
   },
-  updateNote: async (_parent: any, args: { id: String; input: NoteInput }) => {
+  updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
+    const prisma = new PrismaClient();
     const { id } = args;
     const { authorId, title, content } = args.input;
 
@@ -76,7 +80,7 @@ export const noteMutationResolvers: NoteResolvers = {
       data: {
         authorId,
         title,
-        content,
+        // content: content || "",
       },
     });
 
@@ -87,7 +91,8 @@ export const noteMutationResolvers: NoteResolvers = {
 
     return updatedNote;
   },
-  deleteNote: async (_parent: any, args: { id: String }) => {
+  deleteNote: async (_parent: any, args: { id: string }) => {
+    const prisma = new PrismaClient();
     // Grab args
     const { id } = args;
 

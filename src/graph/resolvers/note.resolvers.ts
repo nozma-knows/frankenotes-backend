@@ -1,6 +1,7 @@
 import {
   NoteResolvers,
   NoteInput,
+  Note,
 } from "./../../__generated__/resolvers-types";
 import { PrismaClient } from "@prisma/client";
 
@@ -27,7 +28,7 @@ export const noteQueryResolvers: NoteResolvers = {
 
     return note;
   },
-  notes: (parents: any, args: { authorId: string }) => {
+  notes: async (parents: any, args: { authorId: string }) => {
     const prisma = new PrismaClient();
 
     const { authorId } = args;
@@ -36,21 +37,34 @@ export const noteQueryResolvers: NoteResolvers = {
       throw new Error("Required parameter is missing.");
     }
 
-    return prisma.note.findMany({
+    const notes = await prisma.note.findMany({
       where: { authorId },
     });
+
+    const sortedNotes = notes.sort((a: any, b: any) =>
+      a.updatedAt > b.updatedAt ? -1 : 1
+    );
+    return sortedNotes;
   },
 };
 
 export const noteMutationResolvers: NoteResolvers = {
   // Create Note Mutation Resolver
-  createNote: async (_parent: any, args: { input: NoteInput }) => {
+  createNote: async (_parent: any, args: { authorId: string }) => {
     const prisma = new PrismaClient();
-    // Grab args
-    const { authorId, title, content } = args.input;
+    // // Grab args
+    const { authorId } = args;
 
+    // // Grab args error handling
+    // if (!authorId || !title || !content) {
+    //   console.log("authorId: ", authorId);
+    //   console.log("title: ", title);
+    //   console.log("content: ", content);
+    //   throw new Error("Required parameter is missing.");
+    // }
     // Grab args error handling
-    if (!authorId || !title || !content) {
+    if (!authorId) {
+      console.log("authorId: ", authorId);
       throw new Error("Required parameter is missing.");
     }
 
@@ -59,8 +73,8 @@ export const noteMutationResolvers: NoteResolvers = {
       data: {
         id: crypto.randomUUID(),
         authorId,
-        title,
-        // content,
+        title: "",
+        content: [""],
       },
     });
 

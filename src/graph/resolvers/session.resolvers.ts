@@ -96,7 +96,6 @@ export const sessionMutationResolvers: SessionResolvers = {
       },
       process.env.JWT_PRIVATE_KEY
     );
-
     // Create JWT token error handling
     if (!token) {
       throw new Error("Error creating JWT token");
@@ -114,7 +113,7 @@ export const sessionMutationResolvers: SessionResolvers = {
   logout: async (parent: any, args: any, contextValue: any) => {
     // Grab userId from context
     const { userId, token } = contextValue;
-
+    console.log("userId, token: ", { userId, token });
     // Grab userId error handling
     if (!userId) {
       throw new Error("Must be authenticated to call this endpoint.");

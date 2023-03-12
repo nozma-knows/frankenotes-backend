@@ -52,7 +52,7 @@ export type MutationCreateLoginArgs = {
 
 
 export type MutationCreateNoteArgs = {
-  input: NoteInput;
+  authorId: Scalars['String'];
 };
 
 
@@ -75,7 +75,7 @@ export type Note = {
   __typename?: 'Note';
   author: User;
   authorId: Scalars['String'];
-  content?: Maybe<Array<Scalars['String']>>;
+  content?: Maybe<Array<Maybe<Scalars['String']>>>;
   createdAt: Scalars['String'];
   id: Scalars['ID'];
   title?: Maybe<Scalars['String']>;
@@ -99,6 +99,11 @@ export type Query = {
 
 export type QueryNoteArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryNotesArgs = {
+  authorId: Scalars['String'];
 };
 
 
@@ -231,7 +236,7 @@ export type LoginResolvers<ContextType = Context, ParentType extends ResolversPa
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createLogin?: Resolver<ResolversTypes['Login'], ParentType, ContextType, RequireFields<MutationCreateLoginArgs, 'input'>>;
-  createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'input'>>;
+  createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'authorId'>>;
   deleteNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationDeleteNoteArgs, 'id'>>;
   login?: Resolver<ResolversTypes['Session'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'input'>>;
   logout?: Resolver<ResolversTypes['Session'], ParentType, ContextType>;
@@ -241,7 +246,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 export type NoteResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
   author?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   authorId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  content?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  content?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -251,7 +256,7 @@ export type NoteResolvers<ContextType = Context, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   note?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<QueryNoteArgs, 'id'>>;
-  notes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Note']>>>, ParentType, ContextType>;
+  notes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Note']>>>, ParentType, ContextType, RequireFields<QueryNotesArgs, 'authorId'>>;
   session?: Resolver<Maybe<ResolversTypes['Session']>, ParentType, ContextType, RequireFields<QuerySessionArgs, 'id'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
 }>;

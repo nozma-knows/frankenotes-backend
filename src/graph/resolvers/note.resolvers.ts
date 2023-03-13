@@ -1,7 +1,5 @@
 import {
   NoteResolvers,
-  NoteInput,
-  Note,
   CreateNoteInput,
 } from "./../../__generated__/resolvers-types";
 import { PrismaClient } from "@prisma/client";

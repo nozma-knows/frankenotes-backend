@@ -43,8 +43,13 @@ input LoginInput {
 
 input NoteInput {
   authorId: ID!
-  title: String!
+  title: String
   content: [String]!
+}
+
+input CreateNoteInput {
+  authorId: ID!
+  title: String
 }
 
 type Query {
@@ -58,7 +63,7 @@ type Mutation {
   createLogin(input: CreateLoginInput!): Login!
   login(input: LoginInput!): Session!
   logout: Session!
-  createNote(authorId: String!): Note!
+  createNote(input: CreateNoteInput!): Note!
   updateNote(id: String!, input: NoteInput!): Note!
   deleteNote(id: String!): Note!
 }

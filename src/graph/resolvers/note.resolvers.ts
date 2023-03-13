@@ -2,6 +2,7 @@ import {
   NoteResolvers,
   NoteInput,
   Note,
+  CreateNoteInput,
 } from "./../../__generated__/resolvers-types";
 import { PrismaClient } from "@prisma/client";
 
@@ -50,18 +51,11 @@ export const noteQueryResolvers: NoteResolvers = {
 
 export const noteMutationResolvers: NoteResolvers = {
   // Create Note Mutation Resolver
-  createNote: async (_parent: any, args: { authorId: string }) => {
+  createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
     const prisma = new PrismaClient();
     // // Grab args
-    const { authorId } = args;
+    const { authorId, title } = args.input;
 
-    // // Grab args error handling
-    // if (!authorId || !title || !content) {
-    //   console.log("authorId: ", authorId);
-    //   console.log("title: ", title);
-    //   console.log("content: ", content);
-    //   throw new Error("Required parameter is missing.");
-    // }
     // Grab args error handling
     if (!authorId) {
       console.log("authorId: ", authorId);
@@ -73,7 +67,7 @@ export const noteMutationResolvers: NoteResolvers = {
       data: {
         id: crypto.randomUUID(),
         authorId,
-        title: "",
+        title: title || "",
         content: [""],
       },
     });
@@ -85,13 +79,13 @@ export const noteMutationResolvers: NoteResolvers = {
 
     return note;
   },
-  updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
+  updateNote: async (_parent: any, args: { id: string; input: any }) => {
     const prisma = new PrismaClient();
     const { id } = args;
     const { authorId, title, content } = args.input;
 
     // Grab args error handling
-    if (!id || !authorId || !title || !content) {
+    if (!id || !authorId) {
       throw new Error("Required parameter is missing.");
     }
 
@@ -102,8 +96,8 @@ export const noteMutationResolvers: NoteResolvers = {
       },
       data: {
         authorId,
-        title,
-        // content: content || "",
+        title: title || "",
+        content: content || [""],
       },
     });
 

@@ -23,6 +23,11 @@ export type CreateLoginInput = {
   passwordConfirmation: Scalars['String'];
 };
 
+export type CreateNoteInput = {
+  authorId: Scalars['ID'];
+  title?: InputMaybe<Scalars['String']>;
+};
+
 export type Login = {
   __typename?: 'Login';
   email: Scalars['String'];
@@ -52,7 +57,7 @@ export type MutationCreateLoginArgs = {
 
 
 export type MutationCreateNoteArgs = {
-  authorId: Scalars['String'];
+  input: CreateNoteInput;
 };
 
 
@@ -85,7 +90,7 @@ export type Note = {
 export type NoteInput = {
   authorId: Scalars['ID'];
   content: Array<InputMaybe<Scalars['String']>>;
-  title: Scalars['String'];
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -199,6 +204,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CreateLoginInput: CreateLoginInput;
+  CreateNoteInput: CreateNoteInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Login: ResolverTypeWrapper<Login>;
   LoginInput: LoginInput;
@@ -215,6 +221,7 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean'];
   CreateLoginInput: CreateLoginInput;
+  CreateNoteInput: CreateNoteInput;
   ID: Scalars['ID'];
   Login: Login;
   LoginInput: LoginInput;
@@ -236,7 +243,7 @@ export type LoginResolvers<ContextType = Context, ParentType extends ResolversPa
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createLogin?: Resolver<ResolversTypes['Login'], ParentType, ContextType, RequireFields<MutationCreateLoginArgs, 'input'>>;
-  createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'authorId'>>;
+  createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'input'>>;
   deleteNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationDeleteNoteArgs, 'id'>>;
   login?: Resolver<ResolversTypes['Session'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'input'>>;
   logout?: Resolver<ResolversTypes['Session'], ParentType, ContextType>;

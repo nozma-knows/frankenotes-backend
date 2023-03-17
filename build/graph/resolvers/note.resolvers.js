@@ -10,10 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.noteMutationResolvers = exports.noteQueryResolvers = void 0;
-const { prisma } = require("../../prisma/client");
+const client_1 = require("@prisma/client");
 const crypto = require("crypto");
 exports.noteQueryResolvers = {
     note: (parents, args) => {
+        const prisma = new client_1.PrismaClient();
         const { id } = args;
         if (!id) {
             throw new Error("Required parameter is missing.");
@@ -28,18 +29,28 @@ exports.noteQueryResolvers = {
         }
         return note;
     },
-    notes: () => {
-        return prisma.note.findMany();
-    },
+    notes: (parents, args) => __awaiter(void 0, void 0, void 0, function* () {
+        const prisma = new client_1.PrismaClient();
+        const { authorId } = args;
+        if (!authorId) {
+            throw new Error("Required parameter is missing.");
+        }
+        const notes = yield prisma.note.findMany({
+            where: { authorId },
+        });
+        const sortedNotes = notes.sort((a, b) => a.updatedAt > b.updatedAt ? -1 : 1);
+        return sortedNotes;
+    }),
 };
 exports.noteMutationResolvers = {
     // Create Note Mutation Resolver
     createNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
-        // Grab args
-        const { authorId, title, content } = args.input;
-        console.log("args.input: ", { authorId, title, content });
+        const prisma = new client_1.PrismaClient();
+        // // Grab args
+        const { authorId, title } = args.input;
         // Grab args error handling
-        if (!authorId || !title || !content) {
+        if (!authorId) {
+            console.log("authorId: ", authorId);
             throw new Error("Required parameter is missing.");
         }
         // Create note
@@ -47,8 +58,8 @@ exports.noteMutationResolvers = {
             data: {
                 id: crypto.randomUUID(),
                 authorId,
-                title,
-                content,
+                title: title || "",
+                content: [""],
             },
         });
         // Create note error handling
@@ -58,10 +69,11 @@ exports.noteMutationResolvers = {
         return note;
     }),
     updateNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
+        const prisma = new client_1.PrismaClient();
         const { id } = args;
         const { authorId, title, content } = args.input;
         // Grab args error handling
-        if (!id || !authorId || !title || !content) {
+        if (!id || !authorId) {
             throw new Error("Required parameter is missing.");
         }
         // Create note
@@ -71,8 +83,8 @@ exports.noteMutationResolvers = {
             },
             data: {
                 authorId,
-                title,
-                content,
+                title: title || "",
+                content: content || [""],
             },
         });
         // Update note error handling
@@ -82,6 +94,7 @@ exports.noteMutationResolvers = {
         return updatedNote;
     }),
     deleteNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
+        const prisma = new client_1.PrismaClient();
         // Grab args
         const { id } = args;
         // Grab args error handling

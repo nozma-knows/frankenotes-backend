@@ -5,14 +5,12 @@ import {
 } from "./session.resolvers";
 import { userQueryResolvers } from "./user.resolvers";
 import { noteQueryResolvers, noteMutationResolvers } from "./note.resolvers";
-import { aiQueryResolvers } from "./ai.resolvers";
 
 export const resolvers: any = {
   Query: {
     ...sessionQueryResolvers,
     ...userQueryResolvers,
     ...noteQueryResolvers,
-    ...aiQueryResolvers,
   },
   Mutation: {
     ...loginMutationResolvers,

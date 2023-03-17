@@ -25,7 +25,6 @@
     "express": "^4.18.2",
     "express-jwt": "^8.4.1",
     "graphql": "^16.6.0",
-    "langchain": "^0.0.29",
     "nodemon": "^2.0.21",
     "prisma": "^4.11.0",
     "rimraf": "^4.3.1",

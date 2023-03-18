@@ -2260,6 +2260,11 @@ cross-fetch@^3.1.5:
   dependencies:
     node-fetch "2.6.7"
 
+cryptr@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/cryptr/-/cryptr-6.2.0.tgz#30dd4754447f9f5d18d5ea8a8dfbae08f00e5cbb"
+  integrity sha512-jYi8SxvOFebTT7EYOABiPpHKY6lwWaP9IVcvT/aIVJUVoFdzTgi0ySPCL78q1ig8w2kwfXFCZACXoCXaye57aw==
+
 cssfilter@0.0.10:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/cssfilter/-/cssfilter-0.0.10.tgz#c6d2672632a2e5c83e013e6864a42ce8defd20ae"

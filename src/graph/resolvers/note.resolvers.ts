@@ -3,11 +3,11 @@ import {
   CreateNoteInput,
 } from "./../../__generated__/resolvers-types";
 import { PrismaClient } from "@prisma/client";
-
+const Cryptr = require("cryptr");
 const crypto = require("crypto");
 
 export const noteQueryResolvers: NoteResolvers = {
-  note: (parents: any, args: { id: string }) => {
+  note: async (parents: any, args: { id: string }) => {
     const prisma = new PrismaClient();
     const { id } = args;
 
@@ -15,14 +15,28 @@ export const noteQueryResolvers: NoteResolvers = {
       throw new Error("Required parameter is missing.");
     }
 
-    const note = prisma.note.findFirst({
+    const note = await prisma.note.findFirst({
       where: {
         id,
       },
     });
 
+    // Grab note error handling
     if (!note) {
-      throw new Error("Can't find note.");
+      throw new Error("Note not found.");
+    }
+
+    const { title, content } = note;
+    console.log("note - note: ", note);
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const decryptedNote = {
+      ...note,
+      title: cryptr.decrypt(title),
+      content: cryptr.decrypt(content),
+    };
+    console.log("note - decryptedNote: ", decryptedNote);
+    if (!decryptedNote) {
+      throw new Error("Failed to decrypt note.");
     }
 
     return note;
@@ -43,30 +57,47 @@ export const noteQueryResolvers: NoteResolvers = {
     const sortedNotes = notes.sort((a: any, b: any) =>
       a.updatedAt > b.updatedAt ? -1 : 1
     );
-    return sortedNotes;
+
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const decryptedNotes = sortedNotes.map((note) => {
+      return {
+        ...note,
+        title: cryptr.decrypt(note.title),
+        content: cryptr.decrypt(note.content),
+      };
+    });
+    console.log("decryptedNotes: ", decryptedNotes);
+    return decryptedNotes;
   },
 };
 
 export const noteMutationResolvers: NoteResolvers = {
   // Create Note Mutation Resolver
   createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
-    const prisma = new PrismaClient();
     // // Grab args
     const { authorId, title } = args.input;
 
     // Grab args error handling
     if (!authorId) {
-      console.log("authorId: ", authorId);
       throw new Error("Required parameter is missing.");
     }
+
+    const prisma = new PrismaClient();
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedTitle = cryptr.encrypt(title || "");
+    const encryptedContent = cryptr.encrypt("");
+
+    console.log("encryptedContent: ", encryptedContent);
 
     // Create note
     const note = await prisma.note.create({
       data: {
         id: crypto.randomUUID(),
         authorId,
-        title: title || "",
-        content: [""],
+        title: encryptedTitle,
+        content: encryptedContent,
       },
     });
 
@@ -75,17 +106,27 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Error creating note.");
     }
 
-    return note;
+    return {
+      ...note,
+      title,
+      content: "",
+    };
   },
   updateNote: async (_parent: any, args: { id: string; input: any }) => {
     const prisma = new PrismaClient();
     const { id } = args;
     const { authorId, title, content } = args.input;
+    console.log("updateNote - title, content: ", { title, content });
 
     // Grab args error handling
     if (!id || !authorId) {
       throw new Error("Required parameter is missing.");
     }
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedTitle = cryptr.encrypt(title || "");
+    const encryptedContent = cryptr.encrypt(content || "");
 
     // Create note
     const updatedNote = await prisma.note.update({
@@ -94,8 +135,8 @@ export const noteMutationResolvers: NoteResolvers = {
       },
       data: {
         authorId,
-        title: title || "",
-        content: content || [""],
+        title: encryptedTitle,
+        content: encryptedContent,
       },
     });
 
@@ -104,7 +145,11 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Error updating note.");
     }
 
-    return updatedNote;
+    return {
+      ...updatedNote,
+      title,
+      content,
+    };
   },
   deleteNote: async (_parent: any, args: { id: string }) => {
     const prisma = new PrismaClient();

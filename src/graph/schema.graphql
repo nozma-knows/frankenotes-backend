@@ -25,7 +25,7 @@ type Note {
   authorId: String!
   author: User!
   title: String
-  content: [String]
+  content: String
 }
 
 input CreateLoginInput {
@@ -44,7 +44,7 @@ input LoginInput {
 input NoteInput {
   authorId: ID!
   title: String
-  content: [String]!
+  content: String
 }
 
 input CreateNoteInput {

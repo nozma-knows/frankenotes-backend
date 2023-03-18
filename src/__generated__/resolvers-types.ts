@@ -129,7 +129,7 @@ export type NotesQuery = {
   createdAt: Scalars["String"];
   id: Scalars["ID"];
   query: Scalars["String"];
-  repsonse?: Maybe<Scalars["String"]>;
+  response?: Maybe<Scalars["String"]>;
   status?: Maybe<NotesQueryStatus>;
   updatedAt: Scalars["String"];
 };
@@ -172,7 +172,6 @@ export type Session = {
 };
 
 export type UpdateNotesQueryInput = {
-  authorId: Scalars["ID"];
   response: Scalars["String"];
 };
 
@@ -430,7 +429,7 @@ export type NotesQueryResolvers<
   createdAt?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   query?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  repsonse?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  response?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
   status?: Resolver<
     Maybe<ResolversTypes["NotesQueryStatus"]>,
     ParentType,

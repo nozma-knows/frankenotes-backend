@@ -113,7 +113,6 @@ export const sessionMutationResolvers: SessionResolvers = {
   logout: async (parent: any, args: any, contextValue: any) => {
     // Grab userId from context
     const { userId, token } = contextValue;
-    console.log("userId, token: ", { userId, token });
     // Grab userId error handling
     if (!userId) {
       throw new Error("Must be authenticated to call this endpoint.");

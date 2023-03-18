@@ -42,7 +42,7 @@ type NotesQuery {
   authorId: String!
   author: User!
   query: String!
-  repsonse: String
+  response: String
   status: NotesQueryStatus
 }
 

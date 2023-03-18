@@ -32,14 +32,12 @@ export const noteQueryResolvers: NoteResolvers = {
     }
 
     const { title, content } = note;
-    console.log("note - note: ", note);
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
     const decryptedNote = {
       ...note,
       title: cryptr.decrypt(title),
       content: cryptr.decrypt(content),
     };
-    console.log("note - decryptedNote: ", decryptedNote);
     if (!decryptedNote) {
       throw new Error("Failed to decrypt note.");
     }
@@ -69,7 +67,6 @@ export const noteQueryResolvers: NoteResolvers = {
         content: cryptr.decrypt(note.content),
       };
     });
-    console.log("decryptedNotes: ", decryptedNotes);
     return decryptedNotes;
   },
   notesQueries: async (parents: any, args: { authorId: string }) => {
@@ -86,7 +83,7 @@ export const noteQueryResolvers: NoteResolvers = {
     });
 
     const sortedNotesQueries = notesQueries.sort((a: any, b: any) =>
-      a.updatedAt > b.updatedAt ? -1 : 1
+      a.updatedAt > b.updatedAt ? 1 : -1
     );
 
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
@@ -117,8 +114,6 @@ export const noteMutationResolvers: NoteResolvers = {
     const encryptedTitle = cryptr.encrypt(title || "");
     const encryptedContent = cryptr.encrypt("");
 
-    console.log("encryptedContent: ", encryptedContent);
-
     // Create note
     const note = await prisma.note.create({
       data: {
@@ -143,7 +138,6 @@ export const noteMutationResolvers: NoteResolvers = {
   updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
     const { id } = args;
     const { authorId, title, content } = args.input;
-    console.log("updateNote - title, content: ", { title, content });
 
     // Grab args error handling
     if (!id || !authorId) {
@@ -269,6 +263,7 @@ export const noteMutationResolvers: NoteResolvers = {
       },
       data: {
         response: encryptedResponse,
+        status: NotesQueryStatus.Successful,
       },
     });
 
@@ -277,7 +272,13 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Error updating notes query.");
     }
 
-    return updatedNotesQuery;
+    const decryptedQuery = cryptr.decrypt(updatedNotesQuery.query);
+
+    return {
+      ...updatedNotesQuery,
+      query: decryptedQuery,
+      response,
+    };
   },
   deleteNotesQuery: async (_parent: any, args: { id: string }) => {
     // Grab args

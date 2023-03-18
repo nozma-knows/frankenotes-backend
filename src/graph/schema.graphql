@@ -11,6 +11,7 @@ type User {
   email: String
   emailVerified: Boolean
   notes: [Note]
+  notesQueries: [NotesQuery]
 }
 
 type Session {
@@ -26,6 +27,23 @@ type Note {
   author: User!
   title: String
   content: String
+}
+
+enum NotesQueryStatus {
+  PENDING
+  SUCCESSFUL
+  ERROR
+}
+
+type NotesQuery {
+  id: ID!
+  createdAt: String!
+  updatedAt: String!
+  authorId: String!
+  author: User!
+  query: String!
+  repsonse: String
+  status: NotesQueryStatus
 }
 
 input CreateLoginInput {
@@ -52,11 +70,21 @@ input CreateNoteInput {
   title: String
 }
 
+input CreateNotesQueryInput {
+  authorId: ID!
+  query: String!
+}
+
+input UpdateNotesQueryInput {
+  response: String!
+}
+
 type Query {
   users: [User]
   session(id: String!): Session
   note(id: String!): Note
   notes(authorId: String!): [Note]
+  notesQueries(authorId: String!): [NotesQuery]
 }
 
 type Mutation {
@@ -66,4 +94,8 @@ type Mutation {
   createNote(input: CreateNoteInput!): Note!
   updateNote(id: String!, input: NoteInput!): Note!
   deleteNote(id: String!): Note!
+  createNotesQuery(input: CreateNotesQueryInput!): NotesQuery!
+  updateNotesQuery(id: String!, input: UpdateNotesQueryInput!): NotesQuery!
+  deleteNotesQuery(id: String!): NotesQuery!
+  deleteNotesQueries(authorId: String!): Boolean!
 }

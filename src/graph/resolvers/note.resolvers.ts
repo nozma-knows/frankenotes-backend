@@ -1,14 +1,19 @@
 import {
   NoteResolvers,
   CreateNoteInput,
+  CreateNotesQueryInput,
+  NotesQueryStatus,
+  NoteInput,
+  UpdateNotesQueryInput,
 } from "./../../__generated__/resolvers-types";
 import { PrismaClient } from "@prisma/client";
 const Cryptr = require("cryptr");
 const crypto = require("crypto");
 
+const prisma = new PrismaClient();
+
 export const noteQueryResolvers: NoteResolvers = {
   note: async (parents: any, args: { id: string }) => {
-    const prisma = new PrismaClient();
     const { id } = args;
 
     if (!id) {
@@ -42,8 +47,6 @@ export const noteQueryResolvers: NoteResolvers = {
     return note;
   },
   notes: async (parents: any, args: { authorId: string }) => {
-    const prisma = new PrismaClient();
-
     const { authorId } = args;
 
     if (!authorId) {
@@ -69,20 +72,45 @@ export const noteQueryResolvers: NoteResolvers = {
     console.log("decryptedNotes: ", decryptedNotes);
     return decryptedNotes;
   },
-};
-
-export const noteMutationResolvers: NoteResolvers = {
-  // Create Note Mutation Resolver
-  createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
-    // // Grab args
-    const { authorId, title } = args.input;
+  notesQueries: async (parents: any, args: { authorId: string }) => {
+    // Grab args
+    const { authorId } = args;
 
     // Grab args error handling
     if (!authorId) {
       throw new Error("Required parameter is missing.");
     }
 
-    const prisma = new PrismaClient();
+    const notesQueries = await prisma.notesQuery.findMany({
+      where: { authorId },
+    });
+
+    const sortedNotesQueries = notesQueries.sort((a: any, b: any) =>
+      a.updatedAt > b.updatedAt ? -1 : 1
+    );
+
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const decryptedNotesQueries = sortedNotesQueries.map((noteQuery) => {
+      return {
+        ...noteQuery,
+        query: cryptr.decrypt(noteQuery.query),
+        response: cryptr.decrypt(noteQuery.response),
+      };
+    });
+    return decryptedNotesQueries;
+  },
+};
+
+export const noteMutationResolvers: NoteResolvers = {
+  // Create Note Mutation Resolver
+  createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
+    // Grab args
+    const { authorId, title } = args.input;
+
+    // Grab args error handling
+    if (!authorId) {
+      throw new Error("Required parameter is missing.");
+    }
 
     // Encrypt data
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
@@ -112,8 +140,7 @@ export const noteMutationResolvers: NoteResolvers = {
       content: "",
     };
   },
-  updateNote: async (_parent: any, args: { id: string; input: any }) => {
-    const prisma = new PrismaClient();
+  updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
     const { id } = args;
     const { authorId, title, content } = args.input;
     console.log("updateNote - title, content: ", { title, content });
@@ -152,7 +179,6 @@ export const noteMutationResolvers: NoteResolvers = {
     };
   },
   deleteNote: async (_parent: any, args: { id: string }) => {
-    const prisma = new PrismaClient();
     // Grab args
     const { id } = args;
 
@@ -174,5 +200,106 @@ export const noteMutationResolvers: NoteResolvers = {
     }
 
     return deletedNote;
+  },
+  createNotesQuery: async (
+    _parent: any,
+    args: { input: CreateNotesQueryInput }
+  ) => {
+    // // Grab args
+    const { authorId, query } = args.input;
+
+    // Grab args error handling
+    if (!authorId || !query) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedQuery = cryptr.encrypt(query);
+    const encryptedResponse = cryptr.encrypt("");
+
+    // Encryption error handling
+    if (!encryptedQuery || !encryptedResponse) {
+      throw new Error("Failed to encrypt notes query.");
+    }
+
+    // Create notes query
+    const notesQuery = await prisma.notesQuery.create({
+      data: {
+        id: crypto.randomUUID(),
+        authorId,
+        query: encryptedQuery,
+        response: encryptedResponse,
+        status: NotesQueryStatus.Pending,
+      },
+    });
+
+    // Create note error handling
+    if (!notesQuery) {
+      throw new Error("Error creating notes query.");
+    }
+
+    return {
+      ...notesQuery,
+      query,
+      response: "",
+    };
+  },
+  updateNotesQuery: async (
+    _parent: any,
+    args: { id: string; input: UpdateNotesQueryInput }
+  ) => {
+    // // Grab args
+    const { id } = args;
+    const { response } = args.input;
+
+    // Grab args error handling
+    if (!id || !response) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedResponse = cryptr.encrypt(response);
+
+    // Create note
+    const updatedNotesQuery = await prisma.notesQuery.update({
+      where: {
+        id,
+      },
+      data: {
+        response: encryptedResponse,
+      },
+    });
+
+    // Update note error handling
+    if (!updatedNotesQuery) {
+      throw new Error("Error updating notes query.");
+    }
+
+    return updatedNotesQuery;
+  },
+  deleteNotesQuery: async (_parent: any, args: { id: string }) => {
+    // Grab args
+    const { id } = args;
+
+    // Grab args error handling
+    if (!id) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    // Delete notes query
+    const deletedNotesQuery = await prisma.notesQuery.delete({
+      where: {
+        id,
+      },
+    });
+
+    // Deleted note error handling
+    if (!deletedNotesQuery) {
+      throw new Error("Error deleting notes query.");
+    }
+
+    return deletedNotesQuery;
   },
 };

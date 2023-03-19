@@ -64,6 +64,8 @@ export type Mutation = {
   login: Session;
   logout: Session;
   updateNote: Note;
+  updateNoteContent: Note;
+  updateNoteTitle: Note;
   updateNotesQuery: NotesQuery;
 };
 
@@ -98,6 +100,16 @@ export type MutationLoginArgs = {
 export type MutationUpdateNoteArgs = {
   id: Scalars["String"];
   input: NoteInput;
+};
+
+export type MutationUpdateNoteContentArgs = {
+  content: Scalars["String"];
+  id: Scalars["String"];
+};
+
+export type MutationUpdateNoteTitleArgs = {
+  id: Scalars["String"];
+  title: Scalars["String"];
 };
 
 export type MutationUpdateNotesQueryArgs = {
@@ -397,6 +409,18 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<MutationUpdateNoteArgs, "id" | "input">
+  >;
+  updateNoteContent?: Resolver<
+    ResolversTypes["Note"],
+    ParentType,
+    ContextType,
+    RequireFields<MutationUpdateNoteContentArgs, "content" | "id">
+  >;
+  updateNoteTitle?: Resolver<
+    ResolversTypes["Note"],
+    ParentType,
+    ContextType,
+    RequireFields<MutationUpdateNoteTitleArgs, "id" | "title">
   >;
   updateNotesQuery?: Resolver<
     ResolversTypes["NotesQuery"],

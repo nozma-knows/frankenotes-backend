@@ -172,6 +172,76 @@ export const noteMutationResolvers: NoteResolvers = {
       content,
     };
   },
+  updateNoteTitle: async (
+    _parent: any,
+    args: { id: string; title: string }
+  ) => {
+    const { id, title } = args;
+
+    // Grab args error handling
+    if (!id || !title) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedTitle = cryptr.encrypt(title);
+
+    // Create note
+    const updatedNote = await prisma.note.update({
+      where: {
+        id,
+      },
+      data: {
+        title: encryptedTitle,
+      },
+    });
+
+    // Update note error handling
+    if (!updatedNote) {
+      throw new Error("Error updating note title.");
+    }
+
+    return {
+      ...updatedNote,
+      title,
+    };
+  },
+  updateNoteContent: async (
+    _parent: any,
+    args: { id: string; content: string }
+  ) => {
+    const { id, content } = args;
+
+    // Grab args error handling
+    if (!id || !content) {
+      throw new Error("Required parameter is missing.");
+    }
+
+    // Encrypt data
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const encryptedContent = cryptr.encrypt(content);
+
+    // Create note
+    const updatedNote = await prisma.note.update({
+      where: {
+        id,
+      },
+      data: {
+        content: encryptedContent,
+      },
+    });
+
+    // Update note error handling
+    if (!updatedNote) {
+      throw new Error("Error updating note content.");
+    }
+
+    return {
+      ...updatedNote,
+      content,
+    };
+  },
   deleteNote: async (_parent: any, args: { id: string }) => {
     // Grab args
     const { id } = args;

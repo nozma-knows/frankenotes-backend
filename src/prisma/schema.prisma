@@ -45,8 +45,8 @@ model Note {
   updatedAt DateTime @updatedAt
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
-  title     String
-  content   String
+  title     String?
+  content   String?
 }
 
 enum NotesQueryStatus {

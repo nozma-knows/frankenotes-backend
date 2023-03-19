@@ -93,6 +93,8 @@ type Mutation {
   logout: Session!
   createNote(input: CreateNoteInput!): Note!
   updateNote(id: String!, input: NoteInput!): Note!
+  updateNoteTitle(id: String!, title: String!): Note!
+  updateNoteContent(id: String!, content: String!): Note!
   deleteNote(id: String!): Note!
   createNotesQuery(input: CreateNotesQueryInput!): NotesQuery!
   updateNotesQuery(id: String!, input: UpdateNotesQueryInput!): NotesQuery!

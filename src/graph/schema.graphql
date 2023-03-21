@@ -65,10 +65,10 @@ input NoteInput {
   content: String
 }
 
-input CreateNoteInput {
-  authorId: ID!
-  title: String
-}
+# input CreateNoteInput {
+#   authorId: ID!
+#   title: String
+# }
 
 input CreateNotesQueryInput {
   authorId: ID!
@@ -91,7 +91,8 @@ type Mutation {
   createLogin(input: CreateLoginInput!): Login!
   login(input: LoginInput!): Session!
   logout: Session!
-  createNote(input: CreateNoteInput!): Note!
+  # createNote(input: CreateNoteInput!): Note!
+  createNote(input: NoteInput!): Note!
   updateNote(id: String!, input: NoteInput!): Note!
   updateNoteTitle(id: String!, title: String!): Note!
   updateNoteContent(id: String!, content: String!): Note!

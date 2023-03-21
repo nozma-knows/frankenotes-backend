@@ -31,11 +31,6 @@ export type CreateLoginInput = {
   passwordConfirmation: Scalars["String"];
 };
 
-export type CreateNoteInput = {
-  authorId: Scalars["ID"];
-  title?: InputMaybe<Scalars["String"]>;
-};
-
 export type CreateNotesQueryInput = {
   authorId: Scalars["ID"];
   query: Scalars["String"];
@@ -74,7 +69,7 @@ export type MutationCreateLoginArgs = {
 };
 
 export type MutationCreateNoteArgs = {
-  input: CreateNoteInput;
+  input: NoteInput;
 };
 
 export type MutationCreateNotesQueryArgs = {
@@ -310,7 +305,6 @@ export type DirectiveResolverFn<
 export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]>;
   CreateLoginInput: CreateLoginInput;
-  CreateNoteInput: CreateNoteInput;
   CreateNotesQueryInput: CreateNotesQueryInput;
   ID: ResolverTypeWrapper<Scalars["ID"]>;
   Login: ResolverTypeWrapper<Login>;
@@ -331,7 +325,6 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars["Boolean"];
   CreateLoginInput: CreateLoginInput;
-  CreateNoteInput: CreateNoteInput;
   CreateNotesQueryInput: CreateNotesQueryInput;
   ID: Scalars["ID"];
   Login: Login;

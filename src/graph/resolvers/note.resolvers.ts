@@ -140,8 +140,8 @@ export const noteMutationResolvers: NoteResolvers = {
 
     return {
       ...note,
-      title,
-      content,
+      title: title || "",
+      content: content || "",
     };
   },
   updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
@@ -260,6 +260,29 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Required parameter is missing.");
     }
 
+    const note = await prisma.note.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    // Grab note error handling
+    if (!note) {
+      throw new Error("Note not found.");
+    }
+
+    const { title, content } = note;
+    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const decryptedNote = {
+      ...note,
+      title: cryptr.decrypt(title),
+      content: cryptr.decrypt(content),
+    };
+
+    if (!decryptedNote) {
+      throw new Error("Failed to decrypt note.");
+    }
+
     // Delete note
     const deletedNote = await prisma.note.delete({
       where: {
@@ -272,7 +295,7 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Error updating note.");
     }
 
-    return deletedNote;
+    return decryptedNote;
   },
   createNotesQuery: async (
     _parent: any,

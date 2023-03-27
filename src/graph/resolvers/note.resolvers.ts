@@ -54,7 +54,6 @@ export const noteQueryResolvers: NoteResolvers = {
     const notes = await prisma.note.findMany({
       where: { authorId },
     });
-    console.log("notes: ", notes);
     if (notes) {
       const sortedNotes = notes.sort((a: any, b: any) =>
         a.updatedAt > b.updatedAt ? -1 : 1
@@ -106,7 +105,6 @@ export const noteMutationResolvers: NoteResolvers = {
   // Create Note Mutation Resolver
   // createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
   createNote: async (_parent: any, args: { input: NoteInput }) => {
-    console.log("CREATE NOTE - CONTENT: ", args.input.content);
     // Grab args
     const { authorId, title, content } = args.input;
 
@@ -118,9 +116,7 @@ export const noteMutationResolvers: NoteResolvers = {
     // Encrypt data
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
     const encryptedTitle = cryptr.encrypt(title || "");
-    console.log("CONTENT: ", content || "");
     const encryptedContent = cryptr.encrypt(content || "");
-    console.log("encrypted content: ", encryptedContent);
     // Create note
     const note = await prisma.note.create({
       data: {
@@ -155,8 +151,14 @@ export const noteMutationResolvers: NoteResolvers = {
 
     // Encrypt data
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-    const encryptedTitle = cryptr.encrypt(title || "");
-    const encryptedContent = cryptr.encrypt(content || "");
+
+    // const encryptedTitle = cryptr.encrypt(title || "");
+    const encryptedTitle =
+      title && title !== "" ? `${cryptr.encrypt(title)}` : undefined;
+
+    // const encryptedContent = cryptr.encrypt(content || "");
+    const encryptedContent =
+      content && content !== "" ? `${cryptr.encrypt(content)}` : undefined;
 
     // Create note
     const updatedNote = await prisma.note.update({

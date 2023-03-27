@@ -109,8 +109,7 @@ exports.noteMutationResolvers = {
         if (!note) {
             throw new Error("Error creating note.");
         }
-        return Object.assign(Object.assign({}, note), { title,
-            content });
+        return Object.assign(Object.assign({}, note), { title: title || "", content: content || "" });
     }),
     updateNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
         const { id } = args;
@@ -196,6 +195,21 @@ exports.noteMutationResolvers = {
         if (!id) {
             throw new Error("Required parameter is missing.");
         }
+        const note = yield prisma.note.findFirst({
+            where: {
+                id,
+            },
+        });
+        // Grab note error handling
+        if (!note) {
+            throw new Error("Note not found.");
+        }
+        const { title, content } = note;
+        const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+        const decryptedNote = Object.assign(Object.assign({}, note), { title: cryptr.decrypt(title), content: cryptr.decrypt(content) });
+        if (!decryptedNote) {
+            throw new Error("Failed to decrypt note.");
+        }
         // Delete note
         const deletedNote = yield prisma.note.delete({
             where: {
@@ -206,7 +220,7 @@ exports.noteMutationResolvers = {
         if (!deletedNote) {
             throw new Error("Error updating note.");
         }
-        return deletedNote;
+        return decryptedNote;
     }),
     createNotesQuery: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
         // // Grab args

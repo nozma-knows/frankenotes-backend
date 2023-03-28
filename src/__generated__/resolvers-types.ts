@@ -59,8 +59,6 @@ export type Mutation = {
   login: Session;
   logout: Session;
   updateNote: Note;
-  updateNoteContent: Note;
-  updateNoteTitle: Note;
   updateNotesQuery: NotesQuery;
 };
 
@@ -97,16 +95,6 @@ export type MutationUpdateNoteArgs = {
   input: NoteInput;
 };
 
-export type MutationUpdateNoteContentArgs = {
-  content: Scalars["String"];
-  id: Scalars["String"];
-};
-
-export type MutationUpdateNoteTitleArgs = {
-  id: Scalars["String"];
-  title: Scalars["String"];
-};
-
 export type MutationUpdateNotesQueryArgs = {
   id: Scalars["String"];
   input: UpdateNotesQueryInput;
@@ -116,8 +104,8 @@ export type Note = {
   __typename?: "Note";
   author: User;
   authorId: Scalars["String"];
-  content?: Maybe<Scalars["String"]>;
   createdAt: Scalars["String"];
+  editorState: Scalars["String"];
   id: Scalars["ID"];
   title?: Maybe<Scalars["String"]>;
   updatedAt: Scalars["String"];
@@ -125,7 +113,7 @@ export type Note = {
 
 export type NoteInput = {
   authorId: Scalars["ID"];
-  content?: InputMaybe<Scalars["String"]>;
+  editorState: Scalars["String"];
   title?: InputMaybe<Scalars["String"]>;
 };
 
@@ -403,18 +391,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationUpdateNoteArgs, "id" | "input">
   >;
-  updateNoteContent?: Resolver<
-    ResolversTypes["Note"],
-    ParentType,
-    ContextType,
-    RequireFields<MutationUpdateNoteContentArgs, "content" | "id">
-  >;
-  updateNoteTitle?: Resolver<
-    ResolversTypes["Note"],
-    ParentType,
-    ContextType,
-    RequireFields<MutationUpdateNoteTitleArgs, "id" | "title">
-  >;
   updateNotesQuery?: Resolver<
     ResolversTypes["NotesQuery"],
     ParentType,
@@ -429,8 +405,8 @@ export type NoteResolvers<
 > = ResolversObject<{
   author?: Resolver<ResolversTypes["User"], ParentType, ContextType>;
   authorId?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  content?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  editorState?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes["String"], ParentType, ContextType>;

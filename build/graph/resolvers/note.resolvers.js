@@ -30,9 +30,9 @@ exports.noteQueryResolvers = {
         if (!note) {
             throw new Error("Note not found.");
         }
-        const { title, content } = note;
+        const { title, editorState } = note;
         const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-        const decryptedNote = Object.assign(Object.assign({}, note), { title: cryptr.decrypt(title), content: cryptr.decrypt(content) });
+        const decryptedNote = Object.assign(Object.assign({}, note), { title: cryptr.decrypt(title), editorState: cryptr.decrypt(editorState) });
         if (!decryptedNote) {
             throw new Error("Failed to decrypt note.");
         }
@@ -46,12 +46,11 @@ exports.noteQueryResolvers = {
         const notes = yield prisma.note.findMany({
             where: { authorId },
         });
-        console.log("notes: ", notes);
         if (notes) {
             const sortedNotes = notes.sort((a, b) => a.updatedAt > b.updatedAt ? -1 : 1);
             const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
             const decryptedNotes = sortedNotes.map((note) => {
-                return Object.assign(Object.assign({}, note), { title: cryptr.decrypt(note.title), content: cryptr.decrypt(note.content) });
+                return Object.assign(Object.assign({}, note), { title: cryptr.decrypt(note.title), editorState: cryptr.decrypt(note.editorState) });
             });
             return decryptedNotes;
         }
@@ -81,47 +80,46 @@ exports.noteMutationResolvers = {
     // Create Note Mutation Resolver
     // createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
     createNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log("CREATE NOTE - CONTENT: ", args.input.content);
         // Grab args
-        const { authorId, title, content } = args.input;
+        const { authorId, title, editorState } = args.input;
         // Grab args error handling
-        if (!authorId) {
+        if (!authorId || !editorState) {
             throw new Error("Required parameter is missing.");
         }
         // Encrypt data
         const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
         const encryptedTitle = cryptr.encrypt(title || "");
-        console.log("CONTENT: ", content || "");
-        const encryptedContent = cryptr.encrypt(content || "");
-        console.log("encrypted content: ", encryptedContent);
+        const encryptedEditorState = cryptr.encrypt(editorState);
+        // Encrypt data error handling
+        if (!encryptedTitle || !encryptedEditorState) {
+            throw new Error("Failed to encrypt data.");
+        }
         // Create note
         const note = yield prisma.note.create({
             data: {
                 id: crypto.randomUUID(),
                 authorId,
-                // ...(title && { title: cryptr.encrypt(title) }),
-                // ...(content && { content: cryptr.encrypt(content) }),
                 title: encryptedTitle,
-                content: encryptedContent,
+                editorState: encryptedEditorState,
             },
         });
         // Create note error handling
         if (!note) {
-            throw new Error("Error creating note.");
+            throw new Error("Failed to create note.");
         }
-        return Object.assign(Object.assign({}, note), { title: title || "", content: content || "" });
+        return Object.assign(Object.assign({}, note), { title: title || "", editorState: editorState });
     }),
     updateNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
         const { id } = args;
-        const { authorId, title, content } = args.input;
+        const { authorId, title, editorState } = args.input;
         // Grab args error handling
-        if (!id || !authorId) {
+        if (!id || !authorId || !editorState) {
             throw new Error("Required parameter is missing.");
         }
         // Encrypt data
         const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-        const encryptedTitle = cryptr.encrypt(title || "");
-        const encryptedContent = cryptr.encrypt(content || "");
+        const encryptedTitle = `${cryptr.encrypt(title)}`;
+        const encryptedEditorState = `${cryptr.encrypt(editorState)}`;
         // Create note
         const updatedNote = yield prisma.note.update({
             where: {
@@ -130,63 +128,15 @@ exports.noteMutationResolvers = {
             data: {
                 authorId,
                 title: encryptedTitle,
-                content: encryptedContent,
+                editorState: encryptedEditorState,
             },
         });
         // Update note error handling
         if (!updatedNote) {
-            throw new Error("Error updating note.");
+            throw new Error("Failed to update note.");
         }
         return Object.assign(Object.assign({}, updatedNote), { title,
-            content });
-    }),
-    updateNoteTitle: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id, title } = args;
-        // Grab args error handling
-        if (!id || !title) {
-            throw new Error("Required parameter is missing.");
-        }
-        // Encrypt data
-        const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-        const encryptedTitle = cryptr.encrypt(title);
-        // Create note
-        const updatedNote = yield prisma.note.update({
-            where: {
-                id,
-            },
-            data: {
-                title: encryptedTitle,
-            },
-        });
-        // Update note error handling
-        if (!updatedNote) {
-            throw new Error("Error updating note title.");
-        }
-        return Object.assign(Object.assign({}, updatedNote), { title });
-    }),
-    updateNoteContent: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id, content } = args;
-        // Grab args error handling
-        if (!id || !content) {
-            throw new Error("Required parameter is missing.");
-        }
-        // Encrypt data
-        const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-        const encryptedContent = cryptr.encrypt(content);
-        // Create note
-        const updatedNote = yield prisma.note.update({
-            where: {
-                id,
-            },
-            data: {
-                content: encryptedContent,
-            },
-        });
-        // Update note error handling
-        if (!updatedNote) {
-            throw new Error("Error updating note content.");
-        }
-        return Object.assign(Object.assign({}, updatedNote), { content });
+            editorState });
     }),
     deleteNote: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
         // Grab args
@@ -204,12 +154,11 @@ exports.noteMutationResolvers = {
         if (!note) {
             throw new Error("Note not found.");
         }
-        const { title, content } = note;
+        const { title, editorState } = note;
         const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-        const decryptedNote = Object.assign(Object.assign({}, note), { title: cryptr.decrypt(title), content: cryptr.decrypt(content) });
-        if (!decryptedNote) {
-            throw new Error("Failed to decrypt note.");
-        }
+        const decryptedTitle = cryptr.decrypt(title);
+        const decryptedEditorState = cryptr.decrypt(editorState);
+        const decryptedNote = Object.assign(Object.assign({}, note), { title: decryptedTitle, editorState: decryptedEditorState });
         // Delete note
         const deletedNote = yield prisma.note.delete({
             where: {

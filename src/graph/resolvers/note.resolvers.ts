@@ -31,12 +31,12 @@ export const noteQueryResolvers: NoteResolvers = {
       throw new Error("Note not found.");
     }
 
-    const { title, content } = note;
+    const { title, editorState } = note;
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
     const decryptedNote = {
       ...note,
       title: cryptr.decrypt(title),
-      content: cryptr.decrypt(content),
+      editorState: cryptr.decrypt(editorState),
     };
     if (!decryptedNote) {
       throw new Error("Failed to decrypt note.");
@@ -64,7 +64,7 @@ export const noteQueryResolvers: NoteResolvers = {
         return {
           ...note,
           title: cryptr.decrypt(note.title),
-          content: cryptr.decrypt(note.content),
+          editorState: cryptr.decrypt(note.editorState),
         };
       });
       return decryptedNotes;
@@ -106,59 +106,58 @@ export const noteMutationResolvers: NoteResolvers = {
   // createNote: async (_parent: any, args: { input: CreateNoteInput }) => {
   createNote: async (_parent: any, args: { input: NoteInput }) => {
     // Grab args
-    const { authorId, title, content } = args.input;
+    const { authorId, title, editorState } = args.input;
 
     // Grab args error handling
-    if (!authorId) {
+    if (!authorId || !editorState) {
       throw new Error("Required parameter is missing.");
     }
 
     // Encrypt data
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
     const encryptedTitle = cryptr.encrypt(title || "");
-    const encryptedContent = cryptr.encrypt(content || "");
+    const encryptedEditorState = cryptr.encrypt(editorState);
+
+    // Encrypt data error handling
+    if (!encryptedTitle || !encryptedEditorState) {
+      throw new Error("Failed to encrypt data.");
+    }
+
     // Create note
     const note = await prisma.note.create({
       data: {
         id: crypto.randomUUID(),
         authorId,
-        // ...(title && { title: cryptr.encrypt(title) }),
-        // ...(content && { content: cryptr.encrypt(content) }),
         title: encryptedTitle,
-        content: encryptedContent,
+        editorState: encryptedEditorState,
       },
     });
 
     // Create note error handling
     if (!note) {
-      throw new Error("Error creating note.");
+      throw new Error("Failed to create note.");
     }
 
     return {
       ...note,
       title: title || "",
-      content: content || "",
+      editorState: editorState,
     };
   },
+
   updateNote: async (_parent: any, args: { id: string; input: NoteInput }) => {
     const { id } = args;
-    const { authorId, title, content } = args.input;
+    const { authorId, title, editorState } = args.input;
 
     // Grab args error handling
-    if (!id || !authorId) {
+    if (!id || !authorId || !editorState) {
       throw new Error("Required parameter is missing.");
     }
 
     // Encrypt data
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-
-    // const encryptedTitle = cryptr.encrypt(title || "");
-    const encryptedTitle =
-      title && title !== "" ? `${cryptr.encrypt(title)}` : undefined;
-
-    // const encryptedContent = cryptr.encrypt(content || "");
-    const encryptedContent =
-      content && content !== "" ? `${cryptr.encrypt(content)}` : undefined;
+    const encryptedTitle = `${cryptr.encrypt(title)}`;
+    const encryptedEditorState = `${cryptr.encrypt(editorState)}`;
 
     // Create note
     const updatedNote = await prisma.note.update({
@@ -168,89 +167,19 @@ export const noteMutationResolvers: NoteResolvers = {
       data: {
         authorId,
         title: encryptedTitle,
-        content: encryptedContent,
+        editorState: encryptedEditorState,
       },
     });
 
     // Update note error handling
     if (!updatedNote) {
-      throw new Error("Error updating note.");
+      throw new Error("Failed to update note.");
     }
 
     return {
       ...updatedNote,
       title,
-      content,
-    };
-  },
-  updateNoteTitle: async (
-    _parent: any,
-    args: { id: string; title: string }
-  ) => {
-    const { id, title } = args;
-
-    // Grab args error handling
-    if (!id || !title) {
-      throw new Error("Required parameter is missing.");
-    }
-
-    // Encrypt data
-    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-    const encryptedTitle = cryptr.encrypt(title);
-
-    // Create note
-    const updatedNote = await prisma.note.update({
-      where: {
-        id,
-      },
-      data: {
-        title: encryptedTitle,
-      },
-    });
-
-    // Update note error handling
-    if (!updatedNote) {
-      throw new Error("Error updating note title.");
-    }
-
-    return {
-      ...updatedNote,
-      title,
-    };
-  },
-  updateNoteContent: async (
-    _parent: any,
-    args: { id: string; content: string }
-  ) => {
-    const { id, content } = args;
-
-    // Grab args error handling
-    if (!id || !content) {
-      throw new Error("Required parameter is missing.");
-    }
-
-    // Encrypt data
-    const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
-    const encryptedContent = cryptr.encrypt(content);
-
-    // Create note
-    const updatedNote = await prisma.note.update({
-      where: {
-        id,
-      },
-      data: {
-        content: encryptedContent,
-      },
-    });
-
-    // Update note error handling
-    if (!updatedNote) {
-      throw new Error("Error updating note content.");
-    }
-
-    return {
-      ...updatedNote,
-      content,
+      editorState,
     };
   },
   deleteNote: async (_parent: any, args: { id: string }) => {
@@ -273,17 +202,16 @@ export const noteMutationResolvers: NoteResolvers = {
       throw new Error("Note not found.");
     }
 
-    const { title, content } = note;
+    const { title, editorState } = note;
     const cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
+    const decryptedTitle = cryptr.decrypt(title);
+    const decryptedEditorState = cryptr.decrypt(editorState);
+
     const decryptedNote = {
       ...note,
-      title: cryptr.decrypt(title),
-      content: cryptr.decrypt(content),
+      title: decryptedTitle,
+      editorState: decryptedEditorState,
     };
-
-    if (!decryptedNote) {
-      throw new Error("Failed to decrypt note.");
-    }
 
     // Delete note
     const deletedNote = await prisma.note.delete({

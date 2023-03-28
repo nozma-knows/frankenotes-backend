@@ -26,7 +26,7 @@ type Note {
   authorId: String!
   author: User!
   title: String
-  content: String
+  editorState: String!
 }
 
 enum NotesQueryStatus {
@@ -62,13 +62,8 @@ input LoginInput {
 input NoteInput {
   authorId: ID!
   title: String
-  content: String
+  editorState: String!
 }
-
-# input CreateNoteInput {
-#   authorId: ID!
-#   title: String
-# }
 
 input CreateNotesQueryInput {
   authorId: ID!
@@ -91,11 +86,8 @@ type Mutation {
   createLogin(input: CreateLoginInput!): Login!
   login(input: LoginInput!): Session!
   logout: Session!
-  # createNote(input: CreateNoteInput!): Note!
   createNote(input: NoteInput!): Note!
   updateNote(id: String!, input: NoteInput!): Note!
-  updateNoteTitle(id: String!, title: String!): Note!
-  updateNoteContent(id: String!, content: String!): Note!
   deleteNote(id: String!): Note!
   createNotesQuery(input: CreateNotesQueryInput!): NotesQuery!
   updateNotesQuery(id: String!, input: UpdateNotesQueryInput!): NotesQuery!

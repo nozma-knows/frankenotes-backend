@@ -72,6 +72,7 @@ input CreateNotesQueryInput {
 
 input UpdateNotesQueryInput {
   response: String!
+  status: NotesQueryStatus!
 }
 
 type Query {

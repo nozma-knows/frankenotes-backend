@@ -205,9 +205,9 @@ exports.noteMutationResolvers = {
     updateNotesQuery: (_parent, args) => __awaiter(void 0, void 0, void 0, function* () {
         // // Grab args
         const { id } = args;
-        const { response } = args.input;
+        const { response, status } = args.input;
         // Grab args error handling
-        if (!id || !response) {
+        if (!id || !response || !status) {
             throw new Error("Required parameter is missing.");
         }
         // Encrypt data
@@ -220,7 +220,7 @@ exports.noteMutationResolvers = {
             },
             data: {
                 response: encryptedResponse,
-                status: resolvers_types_1.NotesQueryStatus.Successful,
+                status,
             },
         });
         // Update note error handling

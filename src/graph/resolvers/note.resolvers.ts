@@ -277,10 +277,10 @@ export const noteMutationResolvers: NoteResolvers = {
   ) => {
     // // Grab args
     const { id } = args;
-    const { response } = args.input;
+    const { response, status } = args.input;
 
     // Grab args error handling
-    if (!id || !response) {
+    if (!id || !response || !status) {
       throw new Error("Required parameter is missing.");
     }
 
@@ -295,7 +295,7 @@ export const noteMutationResolvers: NoteResolvers = {
       },
       data: {
         response: encryptedResponse,
-        status: NotesQueryStatus.Successful,
+        status,
       },
     });
 
